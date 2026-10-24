@@ -1,0 +1,28 @@
+BolsaLab 0.4
+
+Archivo principal: index.html
+
+Cambios:
+- Gestor de fuentes: Twelve Data, Yahoo Finance (mediante proxy público) y Marketstack como alternativa opcional.
+- Campo opcional para la clave de Marketstack.
+- Muestra fuente, fecha/hora disponible y etiqueta del tipo de cotización debajo del precio.
+- Marketstack se etiqueta como último cierre, no tiempo real.
+- Si fallan todas las fuentes, conserva el precio anterior y comunica el error.
+- Mantiene el almacenamiento local existente y los datos ya guardados en el navegador.
+
+Instalación en GitHub Pages:
+1. Descomprime el ZIP.
+2. En tu repositorio https://github.com/omotemanji/bolsa pulsa Add file > Upload files.
+3. Sube el index.html nuevo a la raíz y confirma con Commit changes.
+4. Recarga https://omotemanji.github.io/bolsa/.
+
+Configuración:
+- En Datos y ajustes, guarda la clave de Twelve Data que ya utilizas.
+- Marketstack es opcional; el plan gratuito ofrece datos al cierre y tiene un límite mensual de solicitudes. Si creas una clave, introdúcela directamente en la aplicación.
+- Las claves se guardan en el navegador y no deben escribirse en el código ni subirse al repositorio público. En una web estática, las peticiones de API pueden exponer claves en las herramientas de red del navegador; utiliza únicamente claves personales y revisa las condiciones del proveedor.
+- Yahoo Finance usa un proxy público no oficial, que puede fallar o cambiar. No se garantiza su disponibilidad.
+
+Importante:
+- La disponibilidad depende del símbolo, el mercado y las condiciones de cada proveedor.
+- La etiqueta de tiempo real solo se muestra cuando el proveedor/plan y el estado de mercado lo permiten; en caso contrario se indica que el retraso no está confirmado o que es el último precio de sesión.
+- No es asesoramiento financiero.
