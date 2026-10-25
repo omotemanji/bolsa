@@ -1,5 +1,10 @@
-BolsaLab 0.7.1 — corrección del guardado de análisis
+BolsaLab 0.7.2 — corrección del error quoteBadge
 
-Esta versión corrige el botón Guardar análisis, añade mensajes visibles de éxito/error y un identificador alternativo si el navegador no admite crypto.randomUUID().
+Corrige el error “Can’t find variable: quoteBadge”, que impedía terminar de actualizar la pantalla tras guardar el análisis. No requiere borrar los datos locales.
 
-Publicación: sustituye index.html en el repositorio GitHub Pages por este archivo. Conserva el almacenamiento local de BolsaLab. No borres los datos del navegador.
+Publicación:
+1. Sustituye el archivo index.html del repositorio GitHub por este archivo.
+2. Confirma los cambios.
+3. Abre BolsaLab en el mismo navegador y recarga la página.
+
+La app conserva la misma clave de almacenamiento local para mantener los datos del navegador.

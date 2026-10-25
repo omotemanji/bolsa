@@ -12,7 +12,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="brand"><div class="logo">B</div><div><h1>BolsaLab</h1><div class="muted">Comparador y detector de oportunidades · versión 0.7</div></div></div><div class="actions"><button id="exportBtn">Exportar datos</button><button id="importBtn">Importar copia</button><input id="importFile" type="file" accept="application/json" class="hide"></div></header>
+<header class="top"><div class="brand"><div class="logo">B</div><div><h1>BolsaLab</h1><div class="muted">Comparador y detector de oportunidades · versión 0.7.2</div></div></div><div class="actions"><button id="exportBtn">Exportar datos</button><button id="importBtn">Importar copia</button><input id="importFile" type="file" accept="application/json" class="hide"></div></header>
 <main class="wrap">
 <div class="notice"><strong>BolsaLab 0.7:</strong> consulta opcional de fundamentales oficiales SEC para empresas estadounidenses; mejora el diagnóstico de puntuaciones y muestra qué fundamentales faltan. Conserva el mismo almacenamiento local para reutilizar las acciones guardadas. <strong>Importante:</strong> los cálculos son herramientas de análisis, no recomendaciones de compra/venta. La app guarda los datos en este navegador. Los datos de ejemplo están marcados; las cotizaciones automáticas requieren una clave de API.</div>
 <nav class="tabs" aria-label="Secciones">
@@ -79,7 +79,7 @@
 <div class="panel"><h2>Fundamentales SEC (empresas de EE. UU.)</h2><p class="muted">Lee datos oficiales publicados por la SEC. Como la SEC no permite que GitHub Pages consulte su API directamente desde el navegador, descarga el archivo JSON y después impórtalo aquí. No necesitas una clave API ni pagar.</p><div><label for="fundamentalStock">Acción que quieres actualizar</label><select id="fundamentalStock"></select></div><div style="margin-top:12px"><label for="secCik">CIK de la empresa en la SEC</label><input id="secCik" inputmode="numeric" value="0000320193" placeholder="Apple: 0000320193"></div><div class="actions" style="margin-top:12px"><button class="primary" id="openSecFacts">1. Abrir datos oficiales SEC</button><button id="chooseSecFile">2. Importar archivo JSON</button><input id="secFactsFile" type="file" accept=".json,application/json" class="hide"></div><p id="fundamentalStatus" class="muted" aria-live="polite" style="margin-top:12px">Para Apple, el CIK es 0000320193. Abre el archivo SEC, guárdalo en Archivos y luego impórtalo aquí.</p><small>Los ratios se calculan a partir de informes anuales y pueden ser aproximados. La deuda/patrimonio puede usar pasivo total como aproximación. El PER necesita precio actualizado; el dividendo solo se calcula si hay datos por acción compatibles. Para empresas españolas, esta fuente no garantiza cobertura.</small></div><div class="panel"><h2>Copias y privacidad</h2><p>Los datos se guardan localmente en el navegador de este iPad/móvil. Si borras los datos del sitio o cambias de navegador, puedes perderlos. Exporta una copia JSON regularmente.</p><div class="actions"><button id="exportBtn2">Exportar copia JSON</button><button id="importBtn2">Importar copia JSON</button></div><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><h3>Limitaciones actuales</h3><ul class="muted"><li>Importación de fundamentales SEC para empresas estadounidenses; el archivo oficial se descarga manualmente por la limitación CORS de la SEC. Para España e internacional, los fundamentales pueden requerir entrada manual o una fuente compatible.</li><li>Estados Unidos: Twelve Data (datos en tiempo real según la cobertura del plan Basic y el estado del mercado). Alternativa: Yahoo Finance si Twelve Data falla.</li><li>España e internacional: Yahoo Finance como fuente alternativa y Marketstack para último cierre si has guardado una clave. Marketstack gratuito tiene un límite de 100 solicitudes al mes.</li><li>Los datos de precio llevan etiqueta de fuente y tipo de actualización; un precio al cierre nunca se presenta como tiempo real.</li><li>El histórico automático y la sincronización entre dispositivos aún no están implementados.</li><li>El DCF avanzado y la comparación sectorial son siguientes mejoras.</li></ul></div>
 </div>
 </section>
-<div class="footer">BolsaLab 0.7 · Fundamentales SEC y detector de oportunidades · Mercados de España e internacionales · No es asesoramiento financiero.</div>
+<div class="footer">BolsaLab 0.7.2 · Fundamentales SEC y detector de oportunidades · Mercados de España e internacionales · No es asesoramiento financiero.</div>
 </main><div id="toast" class="toast hide"></div>
 <script>
 const KEY='bolsalab_v01_data', APIKEY='bolsalab_v01_twelvedata', MARKETSTACKKEY='bolsalab_v01_marketstack';
@@ -90,6 +90,16 @@ const num=v=>v===''||v===null||v===undefined||!Number.isFinite(Number(v))?null:N
 const fmt=(v,c='EUR')=>v===null||v===undefined||!Number.isFinite(Number(v))?'—':new Intl.NumberFormat('es-ES',{style:'currency',currency:c,maximumFractionDigits:2}).format(Number(v));
 const pct=v=>v===null||v===undefined?'—':Number(v).toLocaleString('es-ES',{maximumFractionDigits:1})+'%';
 const ratio=v=>v===null||v===undefined?'—':Number(v).toLocaleString('es-ES',{maximumFractionDigits:2});
+// Estado de cotización: evita que el panel falle cuando una acción no tiene metadatos de cotización.
+function quoteBadge(s){
+  const source = s && s.quoteSource ? String(s.quoteSource) : '';
+  const kind = s && s.quoteKind ? String(s.quoteKind) : '';
+  if (source || kind) return '<small>' + esc([source,kind].filter(Boolean).join(' · ')) + '</small>';
+  if (s && s.price !== null && s.price !== undefined && Number(s.price) > 0)
+    return '<small>Precio guardado · fuente no confirmada</small>';
+  return '<small>Sin cotización</small>';
+}
+
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function notify(s){$('toast').textContent=s;$('toast').classList.remove('hide');setTimeout(()=>$('toast').classList.add('hide'),2400)}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
