@@ -1,21 +1,24 @@
-BOLSALAB 0.5 — COMPARADOR Y DETECTOR DE OPORTUNIDADES
+BolsaLab 0.6 — Comparador y puntuaciones
 
-Qué añade:
-- Detector de oportunidades ordenable por puntuación, fundamental, margen de seguridad y cobertura.
-- Filtros para ver todas las acciones, acciones con al menos 45% de cobertura de datos o acciones con margen de seguridad positivo.
-- Comparador ampliado con puntuación de oportunidad y cobertura de datos.
-- Etiquetas prudentes: candidata para estudiar, revisar en detalle, señales mixtas, cobertura baja o datos insuficientes.
+CONTENIDO
+- index.html: aplicación web completa, sin instalación.
 
-Compatibilidad:
-- Mantiene las mismas claves de almacenamiento local de BolsaLab 0.4, por lo que reutiliza las acciones e históricos guardados en el mismo navegador.
-- No sobrescribe la versión 0.4 ni cambia las claves API.
-- Los fundamentales siguen siendo manuales; no se inventan datos ausentes.
+CAMBIOS EN 0.6
+- Mantiene el mismo almacenamiento local que la versión 0.5 para conservar los datos guardados en el mismo navegador.
+- El comparador muestra el estado de la puntuación y los fundamentales que faltan.
+- La tabla de oportunidades explica por qué no se puede puntuar una acción.
+- Evita mostrar puntuaciones si la cobertura ponderada de indicadores es inferior al 35%.
+- El PER puede calcularse a partir del precio y el BPA/EPS si ambos están disponibles.
 
-Cómo probar sin publicar todavía:
-1. Guarda/exporta una copia JSON desde BolsaLab 0.4 como respaldo.
-2. Descarga y descomprime BolsaLab_0.5.zip.
-3. Puedes revisar index.html, pero para conservar el mismo almacenamiento debe abrirse en el mismo origen web; una copia local o distinta URL puede usar otro almacenamiento.
-4. Para publicar, sube este index.html al repositorio de prueba o reemplaza el publicado solo cuando hayas guardado una copia de seguridad.
+IMPORTANTE
+- Esta versión NO descarga automáticamente datos fundamentales. Twelve Data Basic sirve para las cotizaciones disponibles en tu plan, pero no proporciona todos los fundamentales necesarios.
+- Los campos ausentes no se inventan. Cuando no hay datos suficientes, se muestra una explicación.
+- Antes de sustituir archivos en GitHub, conserva una copia JSON desde BolsaLab (Exportar datos).
 
-Aviso:
-Las puntuaciones son heurísticas, no recomendaciones financieras. El margen depende del valor intrínseco estimado que introduzca el usuario. La cobertura de datos se basa en los campos que participan en la puntuación fundamental.
+PUBLICAR EN GITHUB PAGES
+1. Descomprime el ZIP.
+2. En el repositorio de GitHub, abre la carpeta raíz.
+3. Sube/reemplaza index.html por el de esta carpeta y confirma el cambio.
+4. Abre https://omotemanji.github.io/bolsa/ y recarga.
+
+La aplicación guarda datos localmente en el navegador. No borres los datos del sitio ni cambies de navegador sin exportar una copia.
