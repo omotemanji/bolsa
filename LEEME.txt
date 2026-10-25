@@ -1,24 +1,30 @@
-BolsaLab 0.6 — Comparador y puntuaciones
+BOLSALAB 0.7 — FUNDAMENTALES SEC
 
-CONTENIDO
-- index.html: aplicación web completa, sin instalación.
+NOVEDAD
+- Permite importar los datos financieros oficiales SEC (companyfacts JSON) y calcular los indicadores que estén disponibles.
+- No necesita una API key adicional.
+- La descarga del archivo es manual porque la SEC indica que data.sec.gov no admite CORS, por lo que una web estática de GitHub Pages no puede consultar esa API directamente desde JavaScript.
+- Se conservan las claves de almacenamiento local de las versiones anteriores.
 
-CAMBIOS EN 0.6
-- Mantiene el mismo almacenamiento local que la versión 0.5 para conservar los datos guardados en el mismo navegador.
-- El comparador muestra el estado de la puntuación y los fundamentales que faltan.
-- La tabla de oportunidades explica por qué no se puede puntuar una acción.
-- Evita mostrar puntuaciones si la cobertura ponderada de indicadores es inferior al 35%.
-- El PER puede calcularse a partir del precio y el BPA/EPS si ambos están disponibles.
+CÓMO PUBLICAR EN GITHUB PAGES DESDE IPAD
+1. Descarga y descomprime este ZIP en Archivos.
+2. Abre el repositorio https://github.com/omotemanji/bolsa
+3. Reemplaza el archivo index.html por el index.html de esta carpeta y confirma el cambio.
+4. Abre https://omotemanji.github.io/bolsa/ y recarga la página.
 
-IMPORTANTE
-- Esta versión NO descarga automáticamente datos fundamentales. Twelve Data Basic sirve para las cotizaciones disponibles en tu plan, pero no proporciona todos los fundamentales necesarios.
-- Los campos ausentes no se inventan. Cuando no hay datos suficientes, se muestra una explicación.
-- Antes de sustituir archivos en GitHub, conserva una copia JSON desde BolsaLab (Exportar datos).
+CÓMO PROBAR CON APPLE
+1. En BolsaLab entra en Ajustes.
+2. En “Fundamentales SEC” selecciona Apple (AAPL).
+3. Deja el CIK 0000320193.
+4. Pulsa “1. Abrir datos oficiales SEC”. Se abrirá el JSON companyfacts de Apple.
+5. Guarda ese archivo en Archivos/Descargas con extensión .json. En Safari/Chrome para iPad, usa el menú Compartir y “Guardar en Archivos” si aparece.
+6. Vuelve a BolsaLab, pulsa “2. Importar archivo JSON” y selecciona el archivo guardado.
+7. Revisa los indicadores rellenados y la fecha/periodo. El PER se calcula con el último BPA anual compatible y el precio guardado; por eso no equivale necesariamente al PER de mercado actualizado.
 
-PUBLICAR EN GITHUB PAGES
-1. Descomprime el ZIP.
-2. En el repositorio de GitHub, abre la carpeta raíz.
-3. Sube/reemplaza index.html por el de esta carpeta y confirma el cambio.
-4. Abre https://omotemanji.github.io/bolsa/ y recarga.
-
-La aplicación guarda datos localmente en el navegador. No borres los datos del sitio ni cambies de navegador sin exportar una copia.
+LIMITACIONES IMPORTANTES
+- SEC cubre empresas que presentan informes en EE. UU.; no es una fuente adecuada para Iberdrola ni para todas las acciones internacionales.
+- La SEC no permite CORS en data.sec.gov, por eso el archivo debe descargarse e importarse manualmente.
+- ROE, crecimiento y otros ratios se calculan con datos XBRL anuales cuando están disponibles.
+- La relación deuda/patrimonio puede usar pasivo total/patrimonio como aproximación, que no es exactamente deuda financiera/patrimonio.
+- El dividendo se completa solo si el archivo tiene un dato anual por acción compatible.
+- Los datos son informativos y no constituyen asesoramiento financiero.
