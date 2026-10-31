@@ -258,14 +258,25 @@ $('fetchOpenFilings').onclick=async()=>{
 };
 $('importOpenFilings').onclick=()=>{
   const stock=stockById($('ofStock').value);if(!stock||!openFilingsLastResponse){$('openFilingsStatus').textContent='Primero consulta los datos y selecciona la acción correcta.';return}
-  const rows=ofWalk(openFilingsLastResponse),years=ofYears(rows);if(!years.length){$('openFilingsStatus').textContent='No se detectaron ejercicios en la respuesta; no se ha cambiado ningún dato.';return}
+  // Leer primero el formato oficial de OpenFilings: periods[].values.
+  // El recorrido genérico queda como compatibilidad para otras respuestas.
+  const directPeriods=Array.isArray(openFilingsLastResponse.periods)?openFilingsLastResponse.periods:[];
+  const directRows=[];
+  directPeriods.forEach(period=>{
+    const year=Number(period.fiscal_year||period.fiscalYear||String(period.period_end||'').slice(0,4));
+    if(!Number.isInteger(year)||year<1990||year>2100||!period.values||typeof period.values!=='object')return;
+    Object.entries(period.values).forEach(([key,value])=>{
+      if(value!==null&&value!==''&&Number.isFinite(Number(value)))directRows.push({year,label:String(key).toLowerCase(),value:Number(value)});
+    });
+  });
+  const rows=directRows.length?directRows:ofWalk(openFilingsLastResponse),years=ofYears(rows);if(!years.length){$('openFilingsStatus').textContent='No se detectaron ejercicios en la respuesta; no se ha cambiado ningún dato.';return}
   const latest=years[0],prior=years[1];let changed=[];
   const rev=ofFind(rows,[/\brevenue\b/,/sales_revenue/,/turnover/],latest),revPrev=prior?ofFind(rows,[/\brevenue\b/,/sales_revenue/,/turnover/],prior):null;
   const ni=ofFind(rows,[/\bnet_income\b/,/net profit/],latest),op=ofFind(rows,[/operating_income/,/operating profit/],latest),assets=ofFind(rows,[/total_assets/],latest),liabs=ofFind(rows,[/total_liabilities/,/total liabilities/],latest),equity=ofFind(rows,[/\bequity\b/,/stockholders_equity/],latest),fcf=ofFind(rows,[/free_cash_flow/,/\bfcf\b/],latest);
   const equityPrev=prior?ofFind(rows,[/\bequity\b/,/stockholders_equity/],prior):null;
   const assetsPrev=prior?ofFind(rows,[/total_assets/],prior):null;
   // OpenFilings solo completa campos vacíos; nunca sustituye datos introducidos manualmente.
-  const isEmpty=(v)=>v===null||v===undefined||v==='';
+  const isEmpty=(v)=>v===null||v===undefined||v===''||(typeof v==='string'&&v.trim()==='');
   const fillEmpty=(key,value,label)=>{if(value!==null&&value!==undefined&&Number.isFinite(Number(value))&&isEmpty(stock[key])){stock[key]=Number(value);changed.push(label);return true}return false};
   fillEmpty('revenueGrowth',rev!==null&&revPrev!==null&&revPrev!==0?(rev/revPrev-1)*100:null,'crecimiento de ingresos');
   fillEmpty('profitMargin',ni!==null&&rev!==null&&rev!==0?ni/rev*100:null,'margen neto');
