@@ -260,14 +260,31 @@ $('importOpenFilings').onclick=()=>{
   const latest=years[0],prior=years[1];let changed=[];
   const rev=ofFind(rows,[/\brevenue\b/,/sales_revenue/,/turnover/],latest),revPrev=prior?ofFind(rows,[/\brevenue\b/,/sales_revenue/,/turnover/],prior):null;
   const ni=ofFind(rows,[/\bnet_income\b/,/net profit/],latest),op=ofFind(rows,[/operating_income/,/operating profit/],latest),assets=ofFind(rows,[/total_assets/],latest),liabs=ofFind(rows,[/total_liabilities/,/total liabilities/],latest),equity=ofFind(rows,[/\bequity\b/,/stockholders_equity/],latest),fcf=ofFind(rows,[/free_cash_flow/,/\bfcf\b/],latest);
-  if(rev!==null&&revPrev!==null&&revPrev!==0){stock.revenueGrowth=(rev/revPrev-1)*100;changed.push('crecimiento de ingresos')}
-  if(ni!==null&&rev!==null&&rev!==0){stock.profitMargin=ni/rev*100;changed.push('margen neto')}
-  if(ni!==null&&equity!==null&&equity!==0){stock.roe=ni/equity*100;changed.push('ROE aproximado (beneficio neto/patrimonio de cierre)')}
-  if(liabs!==null&&equity!==null&&equity!==0){stock.debtEquity=liabs/equity;stock.fundamentalDebtDefinition='Pasivo total / patrimonio (proxy)';changed.push('pasivo/patrimonio aproximado')}
-  if(fcf!==null){stock.fcf=fcf/1e6;changed.push('flujo de caja libre (millones)')}
-  stock.fundamentalSource='OpenFilings';stock.fundamentalAsOf=new Date().toISOString();stock.fundamentalFiscalYear=latest;stock.date=today();stock.fundamentalNote='Importado desde OpenFilings. Revisar moneda, periodos y definiciones. ROE calculado con patrimonio de cierre; ratios aproximados.';
-  if(!changed.length){$('openFilingsStatus').textContent='Se encontraron datos, pero no los necesarios para completar los campos automáticos. No se han cambiado los ratios.';return}
-  save();if(activeId===stock.id)renderAnalysis(stock.id);$('openFilingsStatus').textContent='Actualizada '+stock.ticker+' (ejercicio '+latest+'): '+changed.join(', ')+'. Revisa los valores en el Analizador antes de usarlos.';notify('Fundamentales importados: '+stock.ticker);
+  // Política de importación: OpenFilings solo completa campos vacíos.
+  // Nunca sustituye valores manuales ni datos ya guardados.
+  const putIfEmpty=(key,value,label)=>{
+    const current=stock[key];
+    const empty=current===null||current===undefined||current==='';
+    if(empty&&value!==null&&value!==undefined&&Number.isFinite(Number(value))){
+      stock[key]=Number(value);changed.push(label);return true;
+    }
+    return false;
+  };
+  if(rev!==null&&revPrev!==null&&revPrev!==0)putIfEmpty('revenueGrowth',(rev/revPrev-1)*100,'crecimiento de ingresos');
+  if(ni!==null&&rev!==null&&rev!==0)putIfEmpty('profitMargin',ni/rev*100,'margen neto');
+  if(ni!==null&&equity!==null&&equity!==0)putIfEmpty('roe',ni/equity*100,'ROE aproximado (beneficio neto/patrimonio de cierre)');
+  if(liabs!==null&&equity!==null&&equity!==0){
+    if(putIfEmpty('debtEquity',liabs/equity,'pasivo/patrimonio aproximado')){
+      stock.fundamentalDebtDefinition='Pasivo total / patrimonio (proxy)';
+    }
+  }
+  if(fcf!==null)putIfEmpty('fcf',fcf/1e6,'flujo de caja libre (millones)');
+  if(changed.length){
+    stock.fundamentalSource='OpenFilings';stock.fundamentalAsOf=new Date().toISOString();stock.fundamentalFiscalYear=latest;stock.date=today();
+    stock.fundamentalNote='Importación OpenFilings: solo se rellenan campos que estaban vacíos; los valores existentes se conservan. Revisar moneda, periodos y definiciones. ROE calculado con patrimonio de cierre; ratios aproximados.';
+  }
+  if(!changed.length){$('openFilingsStatus').textContent='No había campos vacíos compatibles para completar. Se conservaron todos los valores existentes sin modificarlos.';return}
+  save();if(activeId===stock.id)renderAnalysis(stock.id);$('openFilingsStatus').textContent='Completados solo los campos que estaban vacíos para '+stock.ticker+' (ejercicio '+latest+'): '+changed.join(', ')+'. Los valores existentes se conservaron.';notify('Campos vacíos completados: '+stock.ticker);
 };
 $('fetchQuote').onclick=async()=>{let s=stockById($('autoStock').value);if(!s){notify('Selecciona una acción');return}$('apiStatus').textContent='Consultando fuentes disponibles…';try{await fetchQuoteForStock(s);save();renderAll();$('apiStatus').textContent=`${s.ticker}: ${fmt(s.price,s.currency)} · ${s.quoteSource} · ${s.quoteKind}. ${s.quoteNote||''}`;notify('Cotización actualizada')}catch(err){$('apiStatus').textContent='No se pudo actualizar: '+err.message+' El precio anterior se conserva y no se marca como actual.'}};
 $('refreshAllQuotes').onclick=async()=>{const btn=$('refreshAllQuotes'),status=$('refreshAllStatus');const stocks=db.stocks.filter(s=>s.ticker&&!/^DEMO/i.test(s.ticker));if(!stocks.length){status.textContent='No hay acciones reales para actualizar. Añade una acción primero; los símbolos DEMO son ficticios.';return}btn.disabled=true;let ok=0,failed=[];status.textContent=`Preparando actualización de ${stocks.length} acciones…`;try{for(let i=0;i<stocks.length;i++){const s=stocks[i];status.textContent=`Actualizando ${i+1} de ${stocks.length}: ${s.ticker}…`;try{await fetchQuoteForStock(s);ok++;save();renderAll()}catch(err){failed.push(s.ticker+' ('+err.message+')')}if(i<stocks.length-1){status.textContent+=' · esperando para respetar límites…';await new Promise(resolve=>setTimeout(resolve,1800))}}status.textContent=`Actualización terminada: ${ok} correcta(s), ${failed.length} error(es). ${failed.length?'Revisa: '+failed.join('; '):'Cotizaciones guardadas.'} Cada precio indica fuente y tipo de actualización.`;if(ok)notify(`Actualizadas ${ok} cotizaciones`)}finally{btn.disabled=false}};
